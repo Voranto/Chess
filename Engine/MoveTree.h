@@ -4,9 +4,9 @@
 
 class MoveNode{
     public:
-        Move value;
+        std::string value;
         std::vector<MoveNode> children;
-        MoveNode(Move val);
+        MoveNode(std::string val);
         MoveNode();
 
 
@@ -21,7 +21,4 @@ class MoveNode{
 class MoveTree{
     public:
     MoveNode  root;
-
-
-
 };

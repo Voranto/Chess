@@ -1,11 +1,11 @@
 #include "MoveTree.h"
 
-MoveNode::MoveNode(Move val){
+MoveNode::MoveNode(std::string val){
     this->value = val;
     this->children = {};
 }
 
 MoveNode::MoveNode(){
-    this->value = Move();
+    this->value = "";
     this->children = {};
 }

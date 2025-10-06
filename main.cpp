@@ -49,7 +49,7 @@ int main()
     MoveGenerator::initKingAttacks();
     MoveGenerator::initSlidingAttacks();
     MoveGenerator::initPawnAttacks();
-    Search::initOpeningTreeCSV();
+    Search::initOpeningTreeTXT();
 
     
 
@@ -209,6 +209,31 @@ void renderBotGUI() {
             std::cout << "BOT MOVING" << std::endl;
             Move bestMove = moveFinder.findBestMove(botGUI.chessboard,6);
             botGUI.chessboard.makeMove(bestMove);
+
+
+            std::cout << "Your moves for opening " << std::endl;
+            MoveNode currNode = Search::openingTree.root;
+            bool flag = true;
+            for (Move& mv : botGUI.chessboard.moveHistory){
+                
+                if (std::find(currNode.children.begin(), currNode.children.end(),parseAlgebraic(mv,board)) != currNode.children.end()){
+                    for (MoveNode& child : currNode.children){
+                        if (child.value == parseAlgebraic(mv,botGUI.chessboard)){
+                            
+                            currNode = child; 
+                            
+                            break;}
+                    }
+                }
+                else{
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag){
+                std::cout << "Possible moves: " << std::endl;
+
+            }
         }
         botGUI.drawChessBoard(window, boardOffset);
 

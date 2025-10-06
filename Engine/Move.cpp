@@ -9,4 +9,4 @@ Move::Move(PieceType type, PieceColor color, int from, int to,
     : pieceType(type), pieceColor(color), from(from), to(to),
       promotionPiece(promotionPiece), pieceEatenType(pieceEatenType), isEnPassant(isEnPassant) {}
 
-  Move::Move(){}
+  Move::Move(): from(-1), to(-1), promotionPiece(None) {}

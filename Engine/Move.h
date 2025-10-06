@@ -25,7 +25,7 @@ public:
     Move();
     std::string toString() const {
         // Convert to algebraic notation like "e2e4" or "e7e8Q"
-        std::string s;
+        std::string s = "";
         s += squareToString(this->from);
         s += squareToString(this->to);
         if (promotionPiece != None){s+= ':';s+= pieceTypeNames[promotionPiece];}
