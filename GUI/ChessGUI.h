@@ -75,6 +75,7 @@ public:
 
 	void drawSelectedPiecePossibilities(int clickEvent, sf::RenderWindow& window, sf::Vector2i boardOffset);
 
+	void drawLastMove(sf::RenderWindow& window , sf::Vector2i boardOffset);
 
 	void handlePromotions(Move& move, sf::RenderWindow& window);
 

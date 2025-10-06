@@ -178,7 +178,7 @@ void renderSingleplayerGUI() {
 void renderBotGUI() {
     int clickEvent = -1;
     int newEvent;
-    Board board;
+    Board board = Board();
     board.setStartingPosition();
 
     Search moveFinder = Search();
@@ -207,39 +207,21 @@ void renderBotGUI() {
         }
         else{
             std::cout << "BOT MOVING" << std::endl;
+
+
             Move bestMove = moveFinder.findBestMove(botGUI.chessboard,6);
             botGUI.chessboard.makeMove(bestMove);
-
+            
 
             std::cout << "Your moves for opening " << std::endl;
-            MoveNode currNode = Search::openingTree.root;
-            bool flag = true;
-            for (Move& mv : botGUI.chessboard.moveHistory){
-                
-                if (std::find(currNode.children.begin(), currNode.children.end(),parseAlgebraic(mv,board)) != currNode.children.end()){
-                    for (MoveNode& child : currNode.children){
-                        if (child.value == parseAlgebraic(mv,botGUI.chessboard)){
-                            
-                            currNode = child; 
-                            
-                            break;}
-                    }
-                }
-                else{
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag){
-                std::cout << "Possible moves: " << std::endl;
 
-            }
+
         }
         botGUI.drawChessBoard(window, boardOffset);
 
         botGUI.drawSelectedPieceSquare(window, boardOffset);
 
-
+        botGUI.drawLastMove(window,boardOffset);
         botGUI.drawPieces(window, boardOffset);
 
         botGUI.drawSelectedPiece(clickEvent, window, boardOffset);
@@ -248,8 +230,6 @@ void renderBotGUI() {
 
         clickedButton = botGUI.renderButtons(window, clickEvent == 1);
 
-        if (clickedButton.has_value()) {
-        }
 
         window.display();
 

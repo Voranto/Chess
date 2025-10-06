@@ -693,5 +693,26 @@ bool ChessGUI::isTherePromotion(Move& move) {
 	return move.promotionPiece != None;
 }
 
+void ChessGUI::drawLastMove(sf::RenderWindow& window , sf::Vector2i boardOffset){
+	if (this->chessboard.moveHistory.size() == 0){return;}
 
+	Move lastMove = this->chessboard.moveHistory.back();
+
+	//Draw a square in the from and to place of the 
+	sf::Color color(187,203,43);
+
+	std::pair<int,int> from = convertGridCoords(lastMove.from);
+	std::pair<int,int> to = convertGridCoords(lastMove.to);
+
+	sf::RectangleShape rect(sf::Vector2f(this->squareSize, this->squareSize));
+	rect.setFillColor(color);
+	sf::Vector2f newPosition = sf::Vector2f(boardOffset) + sf::Vector2f(std::get<0>(from) * this->squareSize , std::get<1>(from) * this->squareSize);
+	rect.setPosition(newPosition);
+	window.draw(rect);
+	
+	newPosition = sf::Vector2f(boardOffset) + sf::Vector2f(std::get<0>(to) * this->squareSize , std::get<1>(to) * this->squareSize);
+	rect.setPosition(newPosition);
+	
+	window.draw(rect);
+}
 

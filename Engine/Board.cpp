@@ -116,6 +116,7 @@ Board::Board() {
 	
 	
 	history = {};
+	moveHistory = {};
 }
 
 void Board::initZobristKeys() {
@@ -368,7 +369,9 @@ uint64_t* Board::getBoardOfType(PieceType type, PieceColor color){
 
 //NOTE: HAS TO BE CALLED BEFORE EXECUTING MOVE
 void Board::updateZobrist(const Move& move) {
+
     int idx = pieceIndex(move.pieceType, move.pieceColor);
+	
     zobristHash ^= ZobristTable[idx][move.from];
 
     zobristHash ^= ZobristTable[idx][move.to];

@@ -4,10 +4,11 @@
 #include "MoveGenerator.h"
 #include "Evaluator.h"
 #include "TTEntry.h"
-#include "csv.hpp"
 #include <iostream>
 #include "algorithm"
 #include <fstream>
+#include "csv.hpp"
+
 
 Move parseAlgebraic(std::string notation, Board& board) {
     std::string originalNotation = notation;
@@ -329,10 +330,10 @@ void Search::initOpeningTreeCSV(){
 }
 
 Move Search::findBestMove(Board& board, int depth) {
-    MoveNode currNode = openingTree.root;
+    MoveNode* currNode = &openingTree.root;
     bool flag = true;
     for (Move& mv : board.moveHistory){
-        std::vector<MoveNode> children = currNode.children;
+        std::vector<MoveNode>& children = currNode->children;
         std::vector<std::string> moveChildren = {};
         for (MoveNode& mv : children){
             moveChildren.emplace_back(mv.value);
@@ -340,13 +341,13 @@ Move Search::findBestMove(Board& board, int depth) {
 
 
         if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
-            for (MoveNode& child : currNode.children){
-                if (child.value == parseAlgebraic(mv, board)){
-                    
-                    currNode = child; 
-                    
-                    break;}
+            for (MoveNode& child : currNode->children) {
+                if (child.value == parseAlgebraic(mv, board)) {
+                    currNode = &child;
+                    break;
+                }
             }
+
         }
         else{
             flag = false;
@@ -354,11 +355,14 @@ Move Search::findBestMove(Board& board, int depth) {
         }
     }
     if (flag){
+        std::cout << "Possible moves for this position: " << std::endl;
+        for (MoveNode mvN : currNode->children){
+            std::cout << mvN.value << std::endl;
 
+        }
 
-
-        int randomMove = std::rand() % currNode.children.size();
-        return parseAlgebraic(currNode.children[randomMove].value,board);
+        int randomMove = std::rand() % currNode->children.size();
+        return parseAlgebraic(currNode->children[randomMove].value,board);
 
         
     }
