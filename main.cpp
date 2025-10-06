@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <optional>
 #include "SFML/Graphics.hpp"
@@ -174,7 +173,6 @@ void renderSingleplayerGUI() {
     }
 }
 
-
 void renderBotGUI() {
     int clickEvent = -1;
     int newEvent;
@@ -187,6 +185,8 @@ void renderBotGUI() {
     botGUI.font = font;
     //FEATURES BUTTONS
     
+    
+
 
     sf::Vector2i boardOffset(500, 50);
 
@@ -213,8 +213,38 @@ void renderBotGUI() {
             botGUI.chessboard.makeMove(bestMove);
             
 
-            std::cout << "Your moves for opening " << std::endl;
+            std::cout << "Your possible moves: " << std::endl;
+            MoveNode* currNode = &Search::openingTree.root;
+            bool flag = true;
+            for (Move& mv : botGUI.chessboard.moveHistory){
+                std::vector<MoveNode>& children = currNode->children;
+                std::vector<std::string> moveChildren = {};
+                for (MoveNode& mv : children){
+                    moveChildren.emplace_back(mv.value);
+                }
 
+
+                if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,botGUI.chessboard)) != moveChildren.end()){
+                    for (MoveNode& child : currNode->children) {
+                        if (child.value == parseAlgebraic(mv, board)) {
+                            currNode = &child;
+                            break;
+                        }
+                    }
+
+                }
+                else{
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag){
+                for (MoveNode mvN : currNode->children){
+                    std::cout << mvN.value << std::endl;
+
+                }
+
+            }
 
         }
         botGUI.drawChessBoard(window, boardOffset);

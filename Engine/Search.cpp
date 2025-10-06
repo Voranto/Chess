@@ -10,7 +10,7 @@
 #include "csv.hpp"
 
 
-Move parseAlgebraic(std::string notation, Board& board) {
+Move parseAlgebraic(std::string notation, Board board) {
     std::string originalNotation = notation;
     // Remove move numbers (e.g., "1.e4") and check/checkmate symbols
     while (!notation.empty() && (isdigit(notation[0]) || notation[0] == '.'))
@@ -117,7 +117,7 @@ Move parseAlgebraic(std::string notation, Board& board) {
     throw std::runtime_error("No matching move found for notation: " + originalNotation);
 }
 
-std::string parseAlgebraic(Move mv, Board& board){
+std::string parseAlgebraic(Move mv, Board board){
     // Handle castling first
     if (mv.pieceType == King && std::abs(mv.to - mv.from) == 2) {
         int fileDiff = (mv.to > mv.from) ? 1 : -1;

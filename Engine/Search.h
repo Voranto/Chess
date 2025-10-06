@@ -4,9 +4,9 @@
 #include "../Engine/MoveGenerator.h"
 #pragma once
 
-Move parseAlgebraic(std::string notation, Board& board);
+Move parseAlgebraic(std::string notation, Board board);
 
-std::string parseAlgebraic(Move mv, Board& board);
+std::string parseAlgebraic(Move mv, Board board);
 
 class Search{
 	public: 
