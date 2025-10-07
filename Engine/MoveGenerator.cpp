@@ -9,7 +9,7 @@ MoveGenerator::MoveGenerator(Board& b, bool fast) : board(b){
     this->fast = fast;
 }
 
-bool MoveGenerator::isSquareAttacked(int square, PieceColor oppositeColor){
+bool MoveGenerator::isSquareAttacked(int square, PieceColor oppositeColor) const{
     //mask for knights
     uint64_t* knightBoard = board.getBoardOfType(Knight, oppositeColor);
     if ((*knightBoard & knightAttacks[square]) != 0){
@@ -103,24 +103,28 @@ void MoveGenerator::generateKingMoves(Move (*moves)[MAX_MOVES], int& moveCount, 
             if((board.castlingRights & (1ULL << 1)) != 0 &&
                 board.getPieceTypeAtBit(1) == std::make_pair(None,white) &&
                 board.getPieceTypeAtBit(2) == std::make_pair(None,white) &&
-                board.getPieceTypeAtBit(3) == std::make_pair(None,white)){
+                board.getPieceTypeAtBit(3) == std::make_pair(None,white) && 
+                !this->isSquareAttacked(board.getKingPosition(white),black)){
                 moves[currentDepth][moveCount++] = Move(King,white,4,2);
             }
             if((board.castlingRights & (1ULL << 0)) != 0 &&
                 board.getPieceTypeAtBit(5) == std::make_pair(None,white) &&
-                board.getPieceTypeAtBit(6) == std::make_pair(None,white) ){
+                board.getPieceTypeAtBit(6) == std::make_pair(None,white) &&
+                !this->isSquareAttacked(board.getKingPosition(white),black) ){
                 moves[currentDepth][moveCount++] = Move(King,white,4,6);
             }
         }else{
             if((board.castlingRights & (1ULL << 3)) != 0 &&
                 board.getPieceTypeAtBit(57) == std::make_pair(None,white) &&
                 board.getPieceTypeAtBit(58) == std::make_pair(None,white) &&
-                board.getPieceTypeAtBit(59) == std::make_pair(None,white)){
+                board.getPieceTypeAtBit(59) == std::make_pair(None,white) &&
+                !this->isSquareAttacked(board.getKingPosition(black),white)){
                 moves[currentDepth][moveCount++] = Move(King,black,60,58);
             }
             if((board.castlingRights & (1ULL << 2)) != 0 &&
                 board.getPieceTypeAtBit(61) == std::make_pair(None,white) &&
-                board.getPieceTypeAtBit(62) == std::make_pair(None,white) ){
+                board.getPieceTypeAtBit(62) == std::make_pair(None,white) &&
+                !this->isSquareAttacked(board.getKingPosition(black),white)){
                 moves[currentDepth][moveCount++] = Move(King,black,60,62);
             }
         }

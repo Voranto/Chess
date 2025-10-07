@@ -13,7 +13,7 @@ class MoveGenerator{
 		void generateLegalMoves(Move (*moves)[MAX_MOVES], int& moveCount, int currentDepth);
 		void generatePseudoLegalMoves(Move (*moves)[MAX_MOVES], int& moveCount , int currentDepth) const;
     	void generateCaptures(Move (*moves)[MAX_MOVES], int& moveCount) const;
-		bool isSquareAttacked(int square, PieceColor oppositeColor);
+		bool isSquareAttacked(int square, PieceColor oppositeColor) const;
 
 		bool isLegal(Move& move);
 		//Initializers for lookups and magic

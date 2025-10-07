@@ -24,6 +24,7 @@ sf::Vector2f windowSize;
 void renderStartGUI();
 void renderSingleplayerGUI();
 void renderBotGUI();
+void renderLocalGUI();
 sf::Font font;
 void printBitboard(uint64_t board) {
     std::bitset<64> bits(board);
@@ -161,6 +162,7 @@ void renderSingleplayerGUI() {
         if (clickedButton.has_value()) {
             if (clickedButton.value().textString == "PLAY LOCALLY") {
                 std::cout << "PLAY LOCALLY" << std::endl;
+                renderLocalGUI();
             }
             else if (clickedButton.value().textString == "PLAY AGAINST BOT") {
                 std::cout << "PLAY AGAINST BOT" << std::endl;
@@ -265,4 +267,57 @@ void renderBotGUI() {
 
 
     }
+}
+
+void renderLocalGUI(){
+    int clickEvent = -1;
+    int newEvent;
+    Board board = Board();
+    board.setStartingPosition();
+
+    Search moveFinder = Search();
+
+    ChessGUI localGUI = ChessGUI(SINGLEPLAYER_LOCAL, board);
+    localGUI.font = font;
+    //FEATURES BUTTONS
+    
+    
+
+
+    sf::Vector2i boardOffset(500, 50);
+
+    std::optional<Button> clickedButton = std::nullopt;
+
+    while (window.isOpen())
+    {
+
+
+        window.clear();
+        clickEvent = localGUI.updateClickEvent(clickEvent, localGUI.processEventsAndReturnOnClick(window));
+
+
+        sf::Vector2i currentCoords = sf::Mouse::getPosition(window);
+
+        localGUI.processClick(clickEvent,window,boardOffset);
+        
+        localGUI.drawChessBoard(window, boardOffset);
+
+        localGUI.drawSelectedPieceSquare(window, boardOffset);
+
+        localGUI.drawLastMove(window,boardOffset);
+        localGUI.drawPieces(window, boardOffset);
+
+        localGUI.drawSelectedPiece(clickEvent, window, boardOffset);
+
+        localGUI.drawSelectedPiecePossibilities(clickEvent, window, boardOffset);
+
+        clickedButton = localGUI.renderButtons(window, clickEvent == 1);
+
+
+        window.display();
+
+
+    }
+
+
 }

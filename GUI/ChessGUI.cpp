@@ -654,19 +654,19 @@ void ChessGUI::handlePromotions(Move& move, sf::RenderWindow& window) {
 		if (clickedButton.has_value()) {
 			if (clickedButton.value().textString == "QUEEN") {
 				move.promotionPiece = Queen;
-				return;
+				break;
 			}
 			if (clickedButton.value().textString == "ROOK") {
 				move.promotionPiece = Rook;
-				return;
+				break;
 			}
 			if (clickedButton.value().textString == "BISHOP") {
 				move.promotionPiece = Bishop;
-				return;
+				break;
 			}
 			if (clickedButton.value().textString == "KNIGHT") {
 				move.promotionPiece = Knight;
-				return;
+				break;
 			}
 
 		}
@@ -678,15 +678,6 @@ void ChessGUI::handlePromotions(Move& move, sf::RenderWindow& window) {
 		this->buttons.pop_back();
 	}
 	
-	//Delete pawn from board
-	uint64_t* pawnBoard = this->chessboard.getBoardOfType(Pawn, move.pieceColor);
-	int oneDimensionalIndex = move.to;
-	*pawnBoard &= ~(1ULL << oneDimensionalIndex);
-	
-
-	//Add piece of new type
-	uint64_t* pieceBoard = this->chessboard.getBoardOfType(pieceToReturn.type, pieceToReturn.color);
-	*pieceBoard |= (1ULL << oneDimensionalIndex);
 }
 
 bool ChessGUI::isTherePromotion(Move& move) {
