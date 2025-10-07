@@ -91,16 +91,12 @@ int Evaluator::evaluate(const Board& board){
     score += (_mm_popcnt_u64(board.whiteRooks) - _mm_popcnt_u64(board.blackRooks)) * PIECE_VALUES[3];
     score += (_mm_popcnt_u64(board.whiteQueens) - _mm_popcnt_u64(board.blackQueens)) * PIECE_VALUES[4];
     score += (_mm_popcnt_u64(board.whiteKing) - _mm_popcnt_u64(board.blackKing)) * PIECE_VALUES[5];
-    if (board.whiteToMove){
-        score += KingTable[board.getKingPosition(board.whiteToMove ? white : black)];
-    }
-    else{
-        score += KingTable[mirrorSquare(board.getKingPosition(board.whiteToMove ? white : black))];
-    }
+    score += KingTable[board.getKingPosition(white)];
+    score -= KingTable[mirrorSquare(board.getKingPosition(black))];
     
     score += (board.whiteToMove ? 10 : -10);
     // Perspective: positive means white is better
-
-    return board.whiteToMove ? score : -score;
+    
+    return -score;
 
 }

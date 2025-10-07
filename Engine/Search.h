@@ -17,7 +17,8 @@ class Search{
 
 		Move findBestMove(Board& board, int depth, bool printEvals = false , bool startingPos = true);
 		Move findBestMoveIterative(Board& board, bool printEvals = false , bool startingPos = true);
+		void debugAlphaBeta(Board& board, int depth, int alpha, int beta);
 	private:
-		int alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer);
+		int alphaBeta(Board& board, int depth, int alpha, int beta);
 
 };

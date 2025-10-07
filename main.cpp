@@ -18,7 +18,7 @@
 #include "Engine/Search.h"
 #include "Engine/Evaluator.h"
 #include "Engine/TTEntry.h"
-bool DEBUG = true;
+bool DEBUG = false;
 
 sf::RenderWindow window;
 sf::Vector2f windowSize;
@@ -44,6 +44,7 @@ bool comp(Move a, Move b){
 
 
 
+
 int main()
 {
     MoveGenerator::initKnightAttacks();
@@ -61,9 +62,7 @@ int main()
         board.whiteToMove = false;
         board.castlingRights = 0;
         Search searcher = Search();
-        std::cout << "BEST MOVE: " << searcher.findBestMove(board,7,true,false).toString() << std::endl;
-        
-
+        std::cout << "Best move: " << searcher.findBestMoveIterative(board,false,false).toString() << std::endl;
     }
     else{
         Board board = Board();
@@ -223,42 +222,8 @@ void renderBotGUI() {
             std::cout << "BOT MOVING" << std::endl;
 
 
-            Move bestMove = moveFinder.findBestMove(botGUI.chessboard,6);
+            Move bestMove = moveFinder.findBestMoveIterative(botGUI.chessboard,true,true);
             botGUI.chessboard.makeMove(bestMove);
-            
-
-            std::cout << "Your possible moves: " << std::endl;
-            MoveNode* currNode = &Search::openingTree.root;
-            bool flag = true;
-            for (Move& mv : botGUI.chessboard.moveHistory){
-                std::vector<MoveNode>& children = currNode->children;
-                std::vector<std::string> moveChildren = {};
-                for (MoveNode& mv : children){
-                    moveChildren.emplace_back(mv.value);
-                }
-
-
-                if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,botGUI.chessboard)) != moveChildren.end()){
-                    for (MoveNode& child : currNode->children) {
-                        if (child.value == parseAlgebraic(mv, board)) {
-                            currNode = &child;
-                            break;
-                        }
-                    }
-
-                }
-                else{
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag){
-                for (MoveNode mvN : currNode->children){
-                    std::cout << mvN.value << std::endl;
-
-                }
-
-            }
 
         }
         botGUI.drawChessBoard(window, boardOffset);
@@ -287,7 +252,7 @@ void renderLocalGUI(){
     Board board = Board();
     board.parseFEN("2r1kb1r/1Q2p1pp/2pBq3/1p3pR1/5P2/8/P4P1P/3R1K2 w k - 0 1");
     board.whiteToMove = false;
-
+    board.castlingRights = 0;
 
     ChessGUI localGUI = ChessGUI(SINGLEPLAYER_LOCAL, board);
     localGUI.font = font;
