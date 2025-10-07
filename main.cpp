@@ -18,6 +18,7 @@
 #include "Engine/Search.h"
 #include "Engine/Evaluator.h"
 #include "Engine/TTEntry.h"
+bool DEBUG = true;
 
 sf::RenderWindow window;
 sf::Vector2f windowSize;
@@ -54,21 +55,32 @@ int main()
     
 
     std::srand(std::time(0));
-    
-    Board board = Board();
-    board.setStartingPosition();
-    board.enPassantSquare = -1;
-    MoveGenerator gen(board);
+    if (DEBUG){
+        Board board = Board();
+        board.parseFEN("2r1kb1r/1Q2p1pp/2pBq3/1p3pR1/5P2/8/P4P1P/3R1K2 w k - 0 1");
+        board.whiteToMove = false;
+        board.castlingRights = 0;
+        Search searcher = Search();
+        std::cout << "BEST MOVE: " << searcher.findBestMove(board,7,true,false).toString() << std::endl;
+        
 
-    window.create(sf::VideoMode::getDesktopMode(),"CHESS GAME",sf::Style::Default);
-    windowSize = sf::Vector2f(window.getSize().x, window.getSize().y);
-
-    window.setPosition(sf::Vector2i(0, 0));
-    if (!font.openFromFile("..\\assets\\font\\arial.ttf")){
-        throw std::invalid_argument("couldnt find file font arial");
     }
-    window.setMouseCursorVisible(true);
-    renderStartGUI();
+    else{
+        Board board = Board();
+        board.setStartingPosition();
+        board.enPassantSquare = -1;
+        MoveGenerator gen(board);
+
+        window.create(sf::VideoMode::getDesktopMode(),"CHESS GAME",sf::Style::Default);
+        windowSize = sf::Vector2f(window.getSize().x, window.getSize().y);
+
+        window.setPosition(sf::Vector2i(0, 0));
+        if (!font.openFromFile("..\\assets\\font\\arial.ttf")){
+            throw std::invalid_argument("couldnt find file font arial");
+        }
+        window.setMouseCursorVisible(true);
+        renderStartGUI();
+    }
 }
 
 
@@ -273,9 +285,9 @@ void renderLocalGUI(){
     int clickEvent = -1;
     int newEvent;
     Board board = Board();
-    board.setStartingPosition();
+    board.parseFEN("2r1kb1r/1Q2p1pp/2pBq3/1p3pR1/5P2/8/P4P1P/3R1K2 w k - 0 1");
+    board.whiteToMove = false;
 
-    Search moveFinder = Search();
 
     ChessGUI localGUI = ChessGUI(SINGLEPLAYER_LOCAL, board);
     localGUI.font = font;

@@ -12,7 +12,7 @@
 #include "Move.h"
 #include "TTEntry.h"
 
-constexpr int MAX_DEPTH = 10;
+constexpr int MAX_DEPTH = 14;
 constexpr int MAX_MOVES = 218;
 
 extern Move moves[MAX_DEPTH][MAX_MOVES];  // just a declaration
@@ -73,10 +73,10 @@ public:
 	uint64_t getCombinedBoard(PieceColor color) const;
 
 	std::pair<PieceType, PieceColor> getPieceTypeAtBit(int bit) const;
-	char getLetterOfPieceType(PieceType type);
+	char getLetterOfPieceType(PieceType type) const;
 
 
-	void print() {
+	void print() const {
 		std::cout << "   +-----------------+\n";
 		for (int i = 0; i < 8; i++) {
 			std::cout << 8 - i << "  | ";  // rank label

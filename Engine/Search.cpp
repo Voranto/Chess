@@ -329,66 +329,88 @@ void Search::initOpeningTreeCSV(){
 
 }
 
-Move Search::findBestMove(Board& board, int depth) {
-    MoveNode* currNode = &openingTree.root;
-    bool flag = true;
-    for (Move& mv : board.moveHistory){
-        std::vector<MoveNode>& children = currNode->children;
-        std::vector<std::string> moveChildren = {};
-        for (MoveNode& mv : children){
-            moveChildren.emplace_back(mv.value);
-        }
-
-
-        if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
-            for (MoveNode& child : currNode->children) {
-                if (child.value == parseAlgebraic(mv, board)) {
-                    currNode = &child;
-                    break;
-                }
+Move Search::findBestMove(Board& board, int depth, bool printEvals, bool startingPos) {
+    if (startingPos){
+        MoveNode* currNode = &openingTree.root;
+        bool flag = true;
+        for (Move& mv : board.moveHistory){
+            std::vector<MoveNode>& children = currNode->children;
+            std::vector<std::string> moveChildren = {};
+            for (MoveNode& mvC : children){
+                moveChildren.emplace_back(mvC.value);
             }
 
+
+            if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
+                for (MoveNode& child : currNode->children) {
+                    if (child.value == parseAlgebraic(mv, board)) {
+                        currNode = &child;
+                        break;
+                    }
+                }
+
+            }
+            else{
+                flag = false;
+                break;
+            }
         }
-        else{
-            flag = false;
-            break;
+        if (flag && !currNode->children.empty()){
+            int randomMove = std::rand() % currNode->children.size();
+            return parseAlgebraic(currNode->children[randomMove].value,board);
+
+            
         }
     }
-    if (flag){
-        std::cout << "Possible moves for this position: " << std::endl;
-        for (MoveNode mvN : currNode->children){
-            std::cout << mvN.value << std::endl;
-
-        }
-
-        int randomMove = std::rand() % currNode->children.size();
-        return parseAlgebraic(currNode->children[randomMove].value,board);
-
-        
-    }
-    std::cout << "NO MOVE FROM TREE FOUND" << std::endl;
-    clearTT();
+    
     MoveGenerator gen(board);
     int moveCount = 0;
-    gen.generateLegalMoves(moves, moveCount, 0);
+    gen.generateLegalMoves(moves, moveCount, depth);
 
     int bestScore = INT_MIN;
     Move bestMove;
     for (int i = 0; i < moveCount; i++) {
-        board.makeMove(moves[0][i]);
+        board.makeMove(moves[depth][i]);
         int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX, !board.whiteToMove);
-        board.unmakeMove(moves[0][i]);
+        if (printEvals){
+            std::cout << moves[depth][i].toString() << " scored " << score << std::endl; 
+        }
+        board.unmakeMove(moves[depth][i]);
         if (score > bestScore) {
             bestScore = score;
-            bestMove = moves[0][i];
+            bestMove = moves[depth][i];
         }
     }
-    std::cout << "Pick is: " << bestMove.toString()<< std::endl;
 
 
     return bestMove;
 }
 
+std::chrono::milliseconds SEARCH_TIME_MILLISECONDS = std::chrono::milliseconds(3000);
+
+Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingPos){
+    
+    clearTT();
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+    int currentDepth = 1;
+    Move bestMove;
+    while (true){
+        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
+        if (elapsed >= SEARCH_TIME_MILLISECONDS)
+            break;
+        
+        bestMove = findBestMove(board,currentDepth,printEvals,startingPos);
+
+        currentDepth++;
+    }
+
+    std::cout << "Pick is: " << bestMove.toString()<< std::endl;
+    std::cout << "Depth arrived: " << currentDepth << std::endl;
+    return bestMove;
+    
+}
 
 int Search::alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer) {
     int alphaOrig = alpha;

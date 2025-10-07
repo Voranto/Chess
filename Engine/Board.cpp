@@ -461,7 +461,7 @@ void Board::setTestingPosition(){
 }
 
 //helper functions
-char Board::getLetterOfPieceType(PieceType type) {
+char Board::getLetterOfPieceType(PieceType type) const {
 	if (type == None) { return '.'; }
 	if (type == Knight){return 'N';}
 	return pieceTypeNames[type][0];

@@ -15,8 +15,8 @@ class Search{
 		static void initOpeningTreeTXT();
 		Search();
 
-		Move findBestMove(Board& board, int depth);
-
+		Move findBestMove(Board& board, int depth, bool printEvals = false , bool startingPos = true);
+		Move findBestMoveIterative(Board& board, bool printEvals = false , bool startingPos = true);
 	private:
 		int alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer);
 

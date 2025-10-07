@@ -5,7 +5,7 @@
 #include "Search.h"
 #include "Evaluator.h"
 #include <immintrin.h>
-
+#include <exception>
 
 constexpr int PawnTable[64] = {
       0,   0,   0,   0,   0,   0,   0,   0,
@@ -100,6 +100,7 @@ int Evaluator::evaluate(const Board& board){
     
     score += (board.whiteToMove ? 10 : -10);
     // Perspective: positive means white is better
+
     return board.whiteToMove ? score : -score;
 
 }
