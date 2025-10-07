@@ -1,4 +1,4 @@
-This is a Chess Engine including a user interface
+This is a full Chess Game, including Singleplayer, Multiplayer, and the ability to play against a Chess bot made from scratch
 
 
 Older versions
