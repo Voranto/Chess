@@ -12,6 +12,7 @@ set(SOURCES
     GUI/Piece.cpp
     GUI/GUI.cpp
     GUI/ChessGUI.cpp
+    GUI/MultiplayerChessGUI.cpp
     GUI/TextBox.cpp
     GUI/Button.cpp
     Engine/TTEntry.cpp
@@ -36,12 +37,14 @@ target_include_directories(ChessEngine PRIVATE
 )
 
 # --- SFML 3 setup ---
-find_package(SFML 3 REQUIRED COMPONENTS Graphics Window System)
+find_package(SFML 3 REQUIRED COMPONENTS Graphics Window Network System)
 
 target_link_libraries(ChessEngine PRIVATE
     SFML::Graphics
     SFML::Window
     SFML::System
+    SFML::Network   # <-- add this line
+
 )
 
 # --- Fathom static library ---

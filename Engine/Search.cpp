@@ -424,46 +424,16 @@ Move Search::findBestMove(Board& board, int depth) {
         for (MoveNode& mv : children){
             moveChildren.emplace_back(mv.value);
         }
-        board.unmakeMove(moves[depth][i]);
-        if (score > bestScore) {
-            bestScore = score;
-            bestMove = moves[depth][i];
-        }
-    }
 
 
-    return bestMove;
-}
-
-std::chrono::milliseconds SEARCH_TIME_MILLISECONDS = std::chrono::milliseconds(1s);
-
-
-Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingPos){
-    
-    if (startingPos){
-        MoveNode* currNode = &openingTree.root;
-        bool flag = true;
-        for (Move& mv : board.moveHistory){
-            std::vector<MoveNode>& children = currNode->children;
-            std::vector<std::string> moveChildren = {};
-            for (MoveNode& mvC : children){
-                moveChildren.emplace_back(mvC.value);
-            }
-
-
-            if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
-                for (MoveNode& child : currNode->children) {
-                    if (child.value == parseAlgebraic(mv, board)) {
-                        currNode = &child;
-                        break;
-                    }
+        if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
+            for (MoveNode& child : currNode->children) {
+                if (child.value == parseAlgebraic(mv, board)) {
+                    currNode = &child;
+                    break;
                 }
+            }
 
-            }
-            else{
-                flag = false;
-                break;
-            }
         }
         else{
             flag = false;
@@ -471,11 +441,19 @@ Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingP
         }
     }
     if (flag){
-        
+        std::cout << "Possible moves for this position: " << std::endl;
+        for (MoveNode mvN : currNode->children){
+            std::cout << mvN.value << std::endl;
 
+        }
+
+        int randomMove = std::rand() % currNode->children.size();
+        return parseAlgebraic(currNode->children[randomMove].value,board);
 
         
     }
+    std::cout << "NO MOVE FROM TREE FOUND" << std::endl;
+    clearTT();
     MoveGenerator gen(board);
     int moveCount = 0;
     gen.generateLegalMoves(moves, moveCount, depth);
@@ -484,23 +462,22 @@ Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingP
     Move bestMove;
     for (int i = 0; i < moveCount; i++) {
         board.makeMove(moves[depth][i]);
-        int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX, true);
+        int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX);
         board.unmakeMove(moves[depth][i]);
         if (score < bestScore) {
             bestScore = score;
             bestMove = moves[depth][i];
         }
+        std::cout << moves[depth][i].toString() << " " << score << std::endl;
     }
+    std::cout << "Pick is: " << bestMove.toString() << std::endl;
 
-        currentDepth++;
-    }
 
-    std::cout << "Pick is: " << bestMove.toString()<< std::endl;
-    std::cout << "Depth arrived: " << currentDepth << std::endl;
-    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
     return bestMove;
-    
 }
+
+
+
 
 int Search::alphaBeta(Board& board, int depth, int alpha, int beta) {
     uint64_t key = board.zobristHash;
