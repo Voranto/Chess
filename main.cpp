@@ -211,7 +211,7 @@ void renderBotGUI() {
             std::cout << "BOT MOVING" << std::endl;
 
 
-            Move bestMove = moveFinder.findBestMove(botGUI.chessboard,6);
+            Move bestMove = moveFinder.findBestMoveIterative(botGUI.chessboard);
             botGUI.chessboard.makeMove(bestMove);
             
 

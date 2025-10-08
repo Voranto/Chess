@@ -100,6 +100,6 @@ int Evaluator::evaluate(const Board& board){
     
     score += (board.whiteToMove ? 10 : -10);
     // Perspective: positive means white is better
-    return board.whiteToMove ? score : -score;
+    return score;
 
 }

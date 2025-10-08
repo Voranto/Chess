@@ -4,6 +4,7 @@
 #include <iostream>
 #include "MoveGenerator.h"
 #include <stdexcept>
+#include <immintrin.h>
 
 Move moves[MAX_DEPTH][MAX_MOVES];
 
@@ -15,6 +16,10 @@ uint64_t ZobristEnPassant[8];  // En passant file
 int pieceIndex(PieceType type, PieceColor color) {
     int base = (color == white) ? 0 : 6;
     return base + static_cast<int>(type); // assuming Pawn=0..King=5
+}
+
+int Board::countPieces() const {
+	return _mm_popcnt_u64(this->getCombinedBoard(white) | this->getCombinedBoard(black));
 }
 
 int castlingRightsAfterMove(const Move& move, int oldCastling){

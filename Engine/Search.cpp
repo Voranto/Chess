@@ -329,6 +329,30 @@ void Search::initOpeningTreeCSV(){
 
 }
 
+
+std::chrono::milliseconds MAX_SEARCH_TIME = std::chrono::milliseconds(1000);
+
+Move Search::findBestMoveIterative(Board& board){
+    clearTT();
+
+    int currentDepth = 1;
+    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
+    Move bestMove;
+    while (true){
+        bestMove = findBestMove(board,currentDepth);
+        std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(now-start) > MAX_SEARCH_TIME
+            ||currentDepth == MAX_DEPTH - 1){
+            break;
+        }
+        currentDepth++;
+    }
+    std::cout << "DEPTH ACHIEVED: " << currentDepth << std::endl;
+    return bestMove;
+}
+
+
 Move Search::findBestMove(Board& board, int depth) {
     MoveNode* currNode = &openingTree.root;
     bool flag = true;
@@ -370,20 +394,21 @@ Move Search::findBestMove(Board& board, int depth) {
     clearTT();
     MoveGenerator gen(board);
     int moveCount = 0;
-    gen.generateLegalMoves(moves, moveCount, 0);
+    gen.generateLegalMoves(moves, moveCount, depth);
 
-    int bestScore = INT_MIN;
+    int bestScore = INT_MAX;
     Move bestMove;
     for (int i = 0; i < moveCount; i++) {
-        board.makeMove(moves[0][i]);
-        int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX, !board.whiteToMove);
-        board.unmakeMove(moves[0][i]);
-        if (score > bestScore) {
+        board.makeMove(moves[depth][i]);
+        int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX, true);
+        board.unmakeMove(moves[depth][i]);
+        if (score < bestScore) {
             bestScore = score;
-            bestMove = moves[0][i];
+            bestMove = moves[depth][i];
         }
+        std::cout << moves[depth][i].toString() << " " << score << std::endl;
     }
-    std::cout << "Pick is: " << bestMove.toString()<< std::endl;
+    std::cout << "Pick is: " << bestMove.toString() << std::endl;
 
 
     return bestMove;
