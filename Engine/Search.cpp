@@ -470,24 +470,7 @@ Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingP
             break;
         }
     }
-<<<<<<< HEAD
-
-
-    clearTT();
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-
-    int currentDepth = 1;
-    Move bestMove;
-    std::chrono::milliseconds elapsed;
-    while (true){
-        std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-        elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
-        std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
-        if (elapsed >= SEARCH_TIME_MILLISECONDS || currentDepth == MAX_DEPTH - 1)
-            break;
-=======
     if (flag){
->>>>>>> 62b9c896acd04eaa0e6f225dccc0b29579049e58
         
 
 
