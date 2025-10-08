@@ -189,6 +189,11 @@ void renderBotGUI() {
     
     
 
+    
+    Button restoreMove = Button(sf::Vector2f(200,windowSize.y/2),font,"Undo Move",
+    50,sf::Color(255,255,255),sf::Color(150,150,150),60);
+
+    botGUI.buttons.emplace_back(restoreMove);
 
     sf::Vector2i boardOffset(500, 50);
 
@@ -214,40 +219,6 @@ void renderBotGUI() {
             Move bestMove = moveFinder.findBestMoveIterative(botGUI.chessboard);
             botGUI.chessboard.makeMove(bestMove);
             
-
-            std::cout << "Your possible moves: " << std::endl;
-            MoveNode* currNode = &Search::openingTree.root;
-            bool flag = true;
-            for (Move& mv : botGUI.chessboard.moveHistory){
-                std::vector<MoveNode>& children = currNode->children;
-                std::vector<std::string> moveChildren = {};
-                for (MoveNode& mv : children){
-                    moveChildren.emplace_back(mv.value);
-                }
-
-
-                if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,botGUI.chessboard)) != moveChildren.end()){
-                    for (MoveNode& child : currNode->children) {
-                        if (child.value == parseAlgebraic(mv, board)) {
-                            currNode = &child;
-                            break;
-                        }
-                    }
-
-                }
-                else{
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag){
-                for (MoveNode mvN : currNode->children){
-                    std::cout << mvN.value << std::endl;
-
-                }
-
-            }
-
         }
         botGUI.drawChessBoard(window, boardOffset);
 
@@ -261,6 +232,17 @@ void renderBotGUI() {
         botGUI.drawSelectedPiecePossibilities(clickEvent, window, boardOffset);
 
         clickedButton = botGUI.renderButtons(window, clickEvent == 1);
+
+        if (clickedButton.has_value()){
+            if(clickedButton.value().text.getString() == "Undo Move"){
+                if(!botGUI.chessboard.moveHistory.empty()){
+                    if (botGUI.chessboard.whiteToMove){
+                        botGUI.chessboard.unmakeMove(botGUI.chessboard.moveHistory.back());
+                    }
+                    botGUI.chessboard.unmakeMove(botGUI.chessboard.moveHistory.back());
+                }
+            }
+        }
 
 
         window.display();
@@ -281,8 +263,10 @@ void renderLocalGUI(){
     localGUI.font = font;
     //FEATURES BUTTONS
     
-    
+    Button restoreMove = Button(sf::Vector2f(200,windowSize.y/2),font,"Undo Move",
+    50,sf::Color(255,255,255),sf::Color(150,150,150),60);
 
+    localGUI.buttons.emplace_back(restoreMove);
 
     sf::Vector2i boardOffset(500, 50);
 
@@ -313,6 +297,13 @@ void renderLocalGUI(){
 
         clickedButton = localGUI.renderButtons(window, clickEvent == 1);
 
+        if (clickedButton.has_value()){
+            if(clickedButton.value().text.getString() == "Undo Move"){
+                if(!localGUI.chessboard.moveHistory.empty()){
+                    localGUI.chessboard.unmakeMove(localGUI.chessboard.moveHistory.back());
+                }
+            }
+        }
 
         window.display();
 
