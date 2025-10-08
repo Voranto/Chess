@@ -331,20 +331,98 @@ void Search::initOpeningTreeCSV(){
 
 }
 
-Move Search::findBestMove(Board& board, int depth, bool printEvals, bool startingPos) {
-    
-    
-    MoveGenerator gen(board);
-    int moveCount = 0;
-    gen.generateLegalMoves(moves, moveCount, depth);
 
-    int bestScore = INT_MIN;
+std::chrono::milliseconds MAX_SEARCH_TIME = std::chrono::milliseconds(1000);
+
+int probeResult(const Board& b) {
+    // convert your board to bitboards as Fathom expects
+    uint64_t white = b.getCombinedBoard(PieceColor::white);
+    uint64_t black = b.getCombinedBoard(PieceColor::black);
+    uint64_t kings = b.whiteKing | b.blackKing;
+    uint64_t queens = b.whiteQueens | b.blackQueens;
+    uint64_t rooks = b.whiteRooks | b.blackRooks;
+    uint64_t bishops = b.whiteBishops | b.blackBishops;
+    uint64_t knights = b.whiteKnights | b.blackKnights;
+    uint64_t pawns = b.whitePawns | b.blackPawns;
+    bool sideToMove = b.whiteToMove;
+
+    int wdl = tb_probe_wdl(
+        white, black, kings, queens, rooks, bishops, knights, pawns,
+        b.halfMoveClock, b.castlingRights, b.enPassantSquare == -1 ? 0: b.enPassantSquare, b.whiteToMove
+    );
+
+    return wdl; // 0 = loss, 1 = draw, 2 = win
+}
+
+Move Search::findBestMoveEndgame(Board& board, unsigned int score){
+    Move move;
+    move.from = TB_GET_FROM(score);
+    move.to = TB_GET_TO(score);
+
+    move.pieceType = board.getPieceTypeAtBit(move.from).first;
+    move.pieceColor = board.getPieceTypeAtBit(move.from).second;
+
+    move.pieceEatenType = board.getPieceTypeAtBit(move.to).first;
+    move.promotionPiece = static_cast<PieceType>(TB_GET_PROMOTES(score));
+    if(move.promotionPiece == Pawn){move.promotionPiece = None;}
+    move.isEnPassant = TB_GET_EP(score) != 0;
+    return move;
+}
+
+Move Search::findBestMoveIterative(Board& board){
+    if (board.countPieces() <= 5){
+        std::cout << "Less than 5 pieces" << std::endl;
+        uint64_t white = board.getCombinedBoard(PieceColor::white); // e1 + f2
+        uint64_t black = board.getCombinedBoard(PieceColor::black);                // h1
+        uint64_t kings = board.whiteKing | board.blackKing ;
+        uint64_t queens = board.whiteQueens |board.blackQueens;
+        uint64_t rooks = board.whiteRooks |board.blackRooks;
+        uint64_t bishops = board.whiteBishops | board.blackBishops;
+        uint64_t knights = board.whiteKnights | board.blackKnights;
+        uint64_t pawns = board.whitePawns |board.blackPawns;
+        bool whiteToMove = board.whiteToMove;
+        unsigned int* results;
+        unsigned int wdl = tb_probe_root(
+            white, black, kings, queens, rooks, bishops, knights, pawns,
+            0, 0, 0, false,results
+        );
+        
+
+        if (wdl != TB_RESULT_FAILED){
+
+            return findBestMoveEndgame(board, wdl);
+        }
+    }
+
+
+    clearTT();
+
+    int currentDepth = 1;
+    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
     Move bestMove;
-    for (int i = 0; i < moveCount; i++) {
-        board.makeMove(moves[depth][i]);
-        int score = -alphaBeta(board, depth - 1, -INT_MAX, +INT_MAX);
-        if (printEvals){
-            std::cout << moves[depth][i].toString() << " scored " << score << std::endl; 
+    while (true){
+        bestMove = findBestMove(board,currentDepth);
+        std::chrono::time_point now = std::chrono::high_resolution_clock::now();
+
+        if(std::chrono::duration_cast<std::chrono::milliseconds>(now-start) > MAX_SEARCH_TIME
+            ||currentDepth == MAX_DEPTH - 1){
+            break;
+        }
+        currentDepth++;
+    }
+    std::cout << "DEPTH ACHIEVED: " << currentDepth << std::endl;
+    return bestMove;
+}
+
+
+Move Search::findBestMove(Board& board, int depth) {
+    MoveNode* currNode = &openingTree.root;
+    bool flag = true;
+    for (Move& mv : board.moveHistory){
+        std::vector<MoveNode>& children = currNode->children;
+        std::vector<std::string> moveChildren = {};
+        for (MoveNode& mv : children){
+            moveChildren.emplace_back(mv.value);
         }
         board.unmakeMove(moves[depth][i]);
         if (score > bestScore) {
@@ -387,14 +465,12 @@ Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingP
                 break;
             }
         }
-        if (flag && !currNode->children.empty()){
-            std::cout << "Move from opening tree" << std::endl;
-            int randomMove = std::rand() % currNode->children.size();
-            return parseAlgebraic(currNode->children[randomMove].value,board);
-
-            
+        else{
+            flag = false;
+            break;
         }
     }
+<<<<<<< HEAD
 
 
     clearTT();
@@ -409,8 +485,29 @@ Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingP
         std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
         if (elapsed >= SEARCH_TIME_MILLISECONDS || currentDepth == MAX_DEPTH - 1)
             break;
+=======
+    if (flag){
+>>>>>>> 62b9c896acd04eaa0e6f225dccc0b29579049e58
         
-        bestMove = findBestMove(board,currentDepth,printEvals,startingPos);
+
+
+        
+    }
+    MoveGenerator gen(board);
+    int moveCount = 0;
+    gen.generateLegalMoves(moves, moveCount, depth);
+
+    int bestScore = INT_MAX;
+    Move bestMove;
+    for (int i = 0; i < moveCount; i++) {
+        board.makeMove(moves[depth][i]);
+        int score = alphaBeta(board, depth - 1, INT_MIN, INT_MAX, true);
+        board.unmakeMove(moves[depth][i]);
+        if (score < bestScore) {
+            bestScore = score;
+            bestMove = moves[depth][i];
+        }
+    }
 
         currentDepth++;
     }
