@@ -483,8 +483,6 @@ void ChessGUI::processClick(int clickEvent, sf::RenderWindow& window, sf::Vector
 	}
 }
 
-
-
 void ChessGUI::setSelectedPiece(std::pair<int, int> gridPos, PieceColor color) {
 	int oneDimensionalIndex = convertGridCoords(gridPos);
 	uint64_t valueToCompare = (1ULL << oneDimensionalIndex);

@@ -72,6 +72,8 @@ public:
 	int getKingPosition(PieceColor color) const;
 	uint64_t getCombinedBoard(PieceColor color) const;
 
+	int countPieces() const;
+
 	std::pair<PieceType, PieceColor> getPieceTypeAtBit(int bit) const;
 	char getLetterOfPieceType(PieceType type) const;
 

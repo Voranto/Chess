@@ -51,7 +51,6 @@ void Button::setTextCenterPos(sf::Vector2f newPos) {
 void Button::draw(sf::RenderWindow& window) {
 	
 	sf::RectangleShape rect = this->getRect();
-
 	rect.setFillColor(this->currentColor);
 	window.draw(rect);
 	window.draw(this->text);
@@ -78,6 +77,7 @@ sf::RectangleShape  Button::getRect() {
 	sf::Vector2f rectSize = this->text.getGlobalBounds().size;
 	//Take into account bigger box for the button
 	rectSize += sf::Vector2f(this->rectAmplifyingValue, this->rectAmplifyingValue);
+
 	sf::RectangleShape rect(rectSize);
 	rect.setPosition(this->getUpdatedRectPos());
 	return rect;
