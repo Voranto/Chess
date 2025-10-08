@@ -18,6 +18,7 @@
 #include "Engine/Search.h"
 #include "Engine/Evaluator.h"
 #include "Engine/TTEntry.h"
+#include "tbprobe.h"
 
 sf::RenderWindow window;
 sf::Vector2f windowSize;
@@ -50,7 +51,9 @@ int main()
     MoveGenerator::initSlidingAttacks();
     MoveGenerator::initPawnAttacks();
     Search::initOpeningTreeTXT();
-
+    if (!tb_init("../tablebases") ||TB_LARGEST == 0){
+        std::exception();
+    }
     
 
     std::srand(std::time(0));
@@ -214,7 +217,7 @@ void renderBotGUI() {
         }
         else{
             std::cout << "BOT MOVING" << std::endl;
-
+            
 
             Move bestMove = moveFinder.findBestMoveIterative(botGUI.chessboard);
             botGUI.chessboard.makeMove(bestMove);

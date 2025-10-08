@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -mpopcnt")
 set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 add_definitions(-DSFML_STATIC)
-# All your source files
+
+# --- Engine source files ---
 set(SOURCES
     GUI/Piece.cpp
     GUI/GUI.cpp
@@ -25,12 +26,13 @@ set(SOURCES
     main.cpp
 )
 
-# Define the executable first
+# --- Define the executable ---
 add_executable(ChessEngine ${SOURCES})
 
-# Include directories
+# --- Include directories ---
 target_include_directories(ChessEngine PRIVATE
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/Engine/endgame/Fathom/src  # Fathom headers
 )
 
 # --- SFML 3 setup ---
@@ -41,3 +43,12 @@ target_link_libraries(ChessEngine PRIVATE
     SFML::Window
     SFML::System
 )
+
+# --- Fathom static library ---
+add_library(fathom STATIC IMPORTED)
+set_target_properties(fathom PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Engine/endgame/Fathom/src/libtbprobe.a"
+)
+
+# Link Fathom to the executable
+target_link_libraries(ChessEngine PRIVATE fathom)

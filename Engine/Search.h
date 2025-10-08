@@ -2,6 +2,8 @@
 #include "Board.h"
 #include "MoveTree.h"
 #include "../Engine/MoveGenerator.h"
+#include "tbprobe.h"
+
 #pragma once
 
 Move parseAlgebraic(std::string notation, Board board);
@@ -18,7 +20,8 @@ class Search{
 		Move findBestMove(Board& board, int depth);
 		Move findBestMoveIterative(Board& board);
 
-		
+		Move findBestMoveEndgame(Board& board);
+
 	private:
 		int alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer);
 

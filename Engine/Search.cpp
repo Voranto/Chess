@@ -332,7 +332,69 @@ void Search::initOpeningTreeCSV(){
 
 std::chrono::milliseconds MAX_SEARCH_TIME = std::chrono::milliseconds(1000);
 
+int probeResult(const Board& b) {
+    // convert your board to bitboards as Fathom expects
+    uint64_t white = b.getCombinedBoard(PieceColor::white);
+    uint64_t black = b.getCombinedBoard(PieceColor::black);
+    uint64_t kings = b.whiteKing | b.blackKing;
+    uint64_t queens = b.whiteQueens | b.blackQueens;
+    uint64_t rooks = b.whiteRooks | b.blackRooks;
+    uint64_t bishops = b.whiteBishops | b.blackBishops;
+    uint64_t knights = b.whiteKnights | b.blackKnights;
+    uint64_t pawns = b.whitePawns | b.blackPawns;
+    bool sideToMove = b.whiteToMove;
+
+    int wdl = tb_probe_wdl(
+        white, black, kings, queens, rooks, bishops, knights, pawns,
+        b.halfMoveClock, b.castlingRights, b.enPassantSquare == -1 ? 0: b.enPassantSquare, b.whiteToMove
+    );
+
+    return wdl; // 0 = loss, 1 = draw, 2 = win
+}
+
+Move Search::findBestMoveEndgame(Board& board){
+    MoveGenerator gen(board);
+    int moveCount = 0;
+    gen.generateLegalMoves(moves, moveCount,0);
+
+    int bestWDL = -1;
+    Move bestMove;
+
+    for (int i = 0; i < moveCount; i++) {
+        board.makeMove(moves[0][i]);
+        int wdl = probeResult(board);
+        board.unmakeMove(moves[0][i]);
+
+        if ((board.whiteToMove && wdl > bestWDL) ||
+            (!board.whiteToMove && wdl < bestWDL)) {
+            bestWDL = wdl;
+            bestMove = moves[0][i];
+        }
+    }
+
+    return bestMove;
+}
+
 Move Search::findBestMoveIterative(Board& board){
+    if (board.countPieces() <= 5){
+        uint64_t white = board.getCombinedBoard(PieceColor::white); // e1 + f2
+        uint64_t black = board.getCombinedBoard(PieceColor::black);                // h1
+        uint64_t kings = board.whiteKing | board.blackKing ;
+        uint64_t queens = 0, rooks = 0, bishops = 0, knights = 0, pawns = (1ULL << 13);
+        bool whiteToMove = true;
+
+        unsigned int wdl = tb_probe_wdl(
+            white, black, kings, queens, rooks, bishops, knights, pawns,
+            board.halfMoveClock, board.castlingRights, board.enPassantSquare == -1 ? 0: board.enPassantSquare, whiteToMove
+        );
+
+        if (wdl != TB_RESULT_FAILED){
+            std::cout << "FOUND MOVE FROM ENDGAME DB" << std::endl;
+            return findBestMoveEndgame(board);
+        }
+    }
+
+
     clearTT();
 
     int currentDepth = 1;
