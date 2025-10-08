@@ -75,7 +75,6 @@ public:
 	std::pair<PieceType, PieceColor> getPieceTypeAtBit(int bit) const;
 	char getLetterOfPieceType(PieceType type) const;
 
-
 	void print() const {
 		std::cout << "   +-----------------+\n";
 		for (int i = 0; i < 8; i++) {
