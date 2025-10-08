@@ -20,6 +20,7 @@
 #include "Engine/TTEntry.h"
 #include "tbprobe.h"
 
+
 sf::RenderWindow window;
 sf::Vector2f windowSize;
 void renderStartGUI();
@@ -182,7 +183,7 @@ void renderBotGUI() {
     int clickEvent = -1;
     int newEvent;
     Board board = Board();
-    board.setStartingPosition();
+    board.setTestingPosition();
 
     Search moveFinder = Search();
 

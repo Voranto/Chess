@@ -445,19 +445,22 @@ void Board::setTestingPosition(){
 
     whiteToMove = true;
 
-    whitePawns   = 0x000000001C003B00ULL;
-    whiteKnights = 0x0000000000240000ULL;
-    whiteBishops = 0x0000000000001004ULL;
-    whiteRooks   = 0x0000000000000021ULL;
-    whiteQueens  = 0x0000000000000008ULL;
-    whiteKing    = 0x0000000000000040ULL;
+    whitePawns   = 0;
+    whiteKnights = 0;
+    whiteBishops = 0;
+    whiteRooks   = 0;
+    whiteQueens  = 0;
+    whiteKing    = (1ULL << 4);
 
-    blackPawns   = 0x00D8200818000000ULL;
-    blackKnights = 0x0220000002000000ULL;
-    blackBishops = 0x0440000000000000ULL;
-    blackRooks   = 0x8200000000000000ULL;
-    blackQueens  = 0x0800000000000000ULL;
-    blackKing    = 0x4000000000000000ULL;
+    blackPawns   = 0;
+    blackKnights = 0;
+    blackBishops = 0;
+    blackRooks   = (1ULL << 56);
+    blackQueens  = 0;
+    blackKing    = (1ULL << 63);
+	castlingRights = 0;
+	enPassantSquare = 0;
+	halfMoveClock = 0,
 
     whitePieces = whitePawns | whiteKnights | whiteBishops | whiteRooks | whiteQueens | whiteKing;
     blackPieces = blackPawns | blackKnights | blackBishops | blackRooks | blackQueens | blackKing;

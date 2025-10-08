@@ -352,45 +352,43 @@ int probeResult(const Board& b) {
     return wdl; // 0 = loss, 1 = draw, 2 = win
 }
 
-Move Search::findBestMoveEndgame(Board& board){
-    MoveGenerator gen(board);
-    int moveCount = 0;
-    gen.generateLegalMoves(moves, moveCount,0);
+Move Search::findBestMoveEndgame(Board& board, unsigned int score){
+    Move move;
+    move.from = TB_GET_FROM(score);
+    move.to = TB_GET_TO(score);
 
-    int bestWDL = -1;
-    Move bestMove;
+    move.pieceType = board.getPieceTypeAtBit(move.from).first;
+    move.pieceColor = board.getPieceTypeAtBit(move.from).second;
 
-    for (int i = 0; i < moveCount; i++) {
-        board.makeMove(moves[0][i]);
-        int wdl = probeResult(board);
-        board.unmakeMove(moves[0][i]);
-
-        if ((board.whiteToMove && wdl > bestWDL) ||
-            (!board.whiteToMove && wdl < bestWDL)) {
-            bestWDL = wdl;
-            bestMove = moves[0][i];
-        }
-    }
-
-    return bestMove;
+    move.pieceEatenType = board.getPieceTypeAtBit(move.to).first;
+    move.promotionPiece = static_cast<PieceType>(TB_GET_PROMOTES(score));
+    if(move.promotionPiece == Pawn){move.promotionPiece = None;}
+    move.isEnPassant = TB_GET_EP(score) != 0;
+    return move;
 }
 
 Move Search::findBestMoveIterative(Board& board){
     if (board.countPieces() <= 5){
+        std::cout << "Less than 5 pieces" << std::endl;
         uint64_t white = board.getCombinedBoard(PieceColor::white); // e1 + f2
         uint64_t black = board.getCombinedBoard(PieceColor::black);                // h1
         uint64_t kings = board.whiteKing | board.blackKing ;
-        uint64_t queens = 0, rooks = 0, bishops = 0, knights = 0, pawns = (1ULL << 13);
-        bool whiteToMove = true;
-
-        unsigned int wdl = tb_probe_wdl(
+        uint64_t queens = board.whiteQueens |board.blackQueens;
+        uint64_t rooks = board.whiteRooks |board.blackRooks;
+        uint64_t bishops = board.whiteBishops | board.blackBishops;
+        uint64_t knights = board.whiteKnights | board.blackKnights;
+        uint64_t pawns = board.whitePawns |board.blackPawns;
+        bool whiteToMove = board.whiteToMove;
+        unsigned int* results;
+        unsigned int wdl = tb_probe_root(
             white, black, kings, queens, rooks, bishops, knights, pawns,
-            board.halfMoveClock, board.castlingRights, board.enPassantSquare == -1 ? 0: board.enPassantSquare, whiteToMove
+            0, 0, 0, false,results
         );
+        
 
         if (wdl != TB_RESULT_FAILED){
-            std::cout << "FOUND MOVE FROM ENDGAME DB" << std::endl;
-            return findBestMoveEndgame(board);
+
+            return findBestMoveEndgame(board, wdl);
         }
     }
 
@@ -441,19 +439,13 @@ Move Search::findBestMove(Board& board, int depth) {
         }
     }
     if (flag){
-        std::cout << "Possible moves for this position: " << std::endl;
-        for (MoveNode mvN : currNode->children){
-            std::cout << mvN.value << std::endl;
-
-        }
+        
 
         int randomMove = std::rand() % currNode->children.size();
         return parseAlgebraic(currNode->children[randomMove].value,board);
 
         
     }
-    std::cout << "NO MOVE FROM TREE FOUND" << std::endl;
-    clearTT();
     MoveGenerator gen(board);
     int moveCount = 0;
     gen.generateLegalMoves(moves, moveCount, depth);
@@ -468,9 +460,7 @@ Move Search::findBestMove(Board& board, int depth) {
             bestScore = score;
             bestMove = moves[depth][i];
         }
-        std::cout << moves[depth][i].toString() << " " << score << std::endl;
     }
-    std::cout << "Pick is: " << bestMove.toString() << std::endl;
 
 
     return bestMove;

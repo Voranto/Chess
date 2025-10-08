@@ -20,7 +20,7 @@ class Search{
 		Move findBestMove(Board& board, int depth);
 		Move findBestMoveIterative(Board& board);
 
-		Move findBestMoveEndgame(Board& board);
+		Move findBestMoveEndgame(Board& board, unsigned int score);
 
 	private:
 		int alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer);
