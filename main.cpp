@@ -45,6 +45,7 @@ bool comp(Move a, Move b){
 
 
 
+
 int main()
 {
     MoveGenerator::initKnightAttacks();
@@ -58,21 +59,30 @@ int main()
     
 
     std::srand(std::time(0));
-    
-    Board board = Board();
-    board.setStartingPosition();
-    board.enPassantSquare = -1;
-    MoveGenerator gen(board);
-
-    window.create(sf::VideoMode::getDesktopMode(),"CHESS GAME",sf::Style::Default);
-    windowSize = sf::Vector2f(window.getSize().x, window.getSize().y);
-
-    window.setPosition(sf::Vector2i(0, 0));
-    if (!font.openFromFile("..\\assets\\font\\arial.ttf")){
-        throw std::invalid_argument("couldnt find file font arial");
+    if (DEBUG){
+        Board board = Board();
+        board.parseFEN("2r1kb1r/1Q2p1pp/2pBq3/1p3pR1/5P2/8/P4P1P/3R1K2 w k - 0 1");
+        board.whiteToMove = false;
+        board.castlingRights = 0;
+        Search searcher = Search();
+        std::cout << "Best move: " << searcher.findBestMoveIterative(board,false,false).toString() << std::endl;
     }
-    window.setMouseCursorVisible(true);
-    renderStartGUI();
+    else{
+        Board board = Board();
+        board.setStartingPosition();
+        board.enPassantSquare = -1;
+        MoveGenerator gen(board);
+
+        window.create(sf::VideoMode::getDesktopMode(),"CHESS GAME",sf::Style::Default);
+        windowSize = sf::Vector2f(window.getSize().x, window.getSize().y);
+
+        window.setPosition(sf::Vector2i(0, 0));
+        if (!font.openFromFile("..\\assets\\font\\arial.ttf")){
+            throw std::invalid_argument("couldnt find file font arial");
+        }
+        window.setMouseCursorVisible(true);
+        renderStartGUI();
+    }
 }
 
 
@@ -259,9 +269,9 @@ void renderLocalGUI(){
     int clickEvent = -1;
     int newEvent;
     Board board = Board();
-    board.setStartingPosition();
-
-    Search moveFinder = Search();
+    board.parseFEN("2r1kb1r/1Q2p1pp/2pBq3/1p3pR1/5P2/8/P4P1P/3R1K2 w k - 0 1");
+    board.whiteToMove = false;
+    board.castlingRights = 0;
 
     ChessGUI localGUI = ChessGUI(SINGLEPLAYER_LOCAL, board);
     localGUI.font = font;

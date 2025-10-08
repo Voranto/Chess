@@ -8,7 +8,9 @@
 #include "algorithm"
 #include <fstream>
 #include "csv.hpp"
-
+#include "MoveTree.h"
+#include <chrono>
+using namespace std::chrono_literals;
 
 Move parseAlgebraic(std::string notation, Board board) {
     std::string originalNotation = notation;
@@ -422,16 +424,46 @@ Move Search::findBestMove(Board& board, int depth) {
         for (MoveNode& mv : children){
             moveChildren.emplace_back(mv.value);
         }
+        board.unmakeMove(moves[depth][i]);
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = moves[depth][i];
+        }
+    }
 
 
-        if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
-            for (MoveNode& child : currNode->children) {
-                if (child.value == parseAlgebraic(mv, board)) {
-                    currNode = &child;
-                    break;
-                }
+    return bestMove;
+}
+
+std::chrono::milliseconds SEARCH_TIME_MILLISECONDS = std::chrono::milliseconds(1s);
+
+
+Move Search::findBestMoveIterative(Board& board, bool printEvals, bool startingPos){
+    
+    if (startingPos){
+        MoveNode* currNode = &openingTree.root;
+        bool flag = true;
+        for (Move& mv : board.moveHistory){
+            std::vector<MoveNode>& children = currNode->children;
+            std::vector<std::string> moveChildren = {};
+            for (MoveNode& mvC : children){
+                moveChildren.emplace_back(mvC.value);
             }
 
+
+            if (std::find(moveChildren.begin(), moveChildren.end(),parseAlgebraic(mv,board)) != moveChildren.end()){
+                for (MoveNode& child : currNode->children) {
+                    if (child.value == parseAlgebraic(mv, board)) {
+                        currNode = &child;
+                        break;
+                    }
+                }
+
+            }
+            else{
+                flag = false;
+                break;
+            }
         }
         else{
             flag = false;
@@ -441,8 +473,6 @@ Move Search::findBestMove(Board& board, int depth) {
     if (flag){
         
 
-        int randomMove = std::rand() % currNode->children.size();
-        return parseAlgebraic(currNode->children[randomMove].value,board);
 
         
     }
@@ -462,14 +492,19 @@ Move Search::findBestMove(Board& board, int depth) {
         }
     }
 
+        currentDepth++;
+    }
 
+    std::cout << "Pick is: " << bestMove.toString()<< std::endl;
+    std::cout << "Depth arrived: " << currentDepth << std::endl;
+    std::cout << "Time elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << std::endl;
     return bestMove;
+    
 }
 
-
-int Search::alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer) {
-    int alphaOrig = alpha;
+int Search::alphaBeta(Board& board, int depth, int alpha, int beta) {
     uint64_t key = board.zobristHash;
+    int originalAlpha = alpha; 
 
     // 1️⃣ TT probe
     if (auto* entry = probeTT(key)) {
@@ -477,85 +512,65 @@ int Search::alphaBeta(Board& board, int depth, int alpha, int beta, bool maximiz
             if (entry->flag == EXACT) return entry->score;
             if (entry->flag == LOWERBOUND && entry->score >= beta) return entry->score;
             if (entry->flag == UPPERBOUND && entry->score <= alpha) return entry->score;
-            
         }
     }
-    
-    
-    if (depth == 0) {
+
+    // 2️⃣ Terminal node
+    if (depth == 0)
         return Evaluator::evaluate(board);
-    }
 
     MoveGenerator gen(board);
     int moveCount = 0;
     gen.generateLegalMoves(moves, moveCount, depth);
 
-
-    // If no legal moves → checkmate or stalemate
+    // 3️⃣ No legal moves → checkmate or stalemate
     if (moveCount == 0) {
-        // Convention: high negative if checkmated, 0 for stalemate
-        if (gen.isSquareAttacked(board.getKingPosition(board.whiteToMove ? white : black), board.whiteToMove ? black : white) ){
-            return maximizingPlayer ? -100000 : 100000; 
-        }
-        return 0; 
+        if (gen.isSquareAttacked(
+                board.getKingPosition(board.whiteToMove ? white : black),
+                board.whiteToMove ? black : white))
+            return -100000 + depth; // lose sooner = worse
+        return 0; // stalemate
     }
 
-    Move bestMove;
-    if (auto* entry = probeTT(key)) bestMove = entry->bestMove;
-
+    // 4️⃣ Move ordering
     std::sort(moves[depth], moves[depth] + moveCount, [](const Move& a, const Move& b) {
         int scoreA = 0, scoreB = 0;
-        if (a.pieceEatenType != None) scoreA = PIECE_VALUES[a.pieceEatenType]- PIECE_VALUES[a.pieceType];
+        if (a.pieceEatenType != None) scoreA = PIECE_VALUES[a.pieceEatenType] - PIECE_VALUES[a.pieceType];
         if (b.pieceEatenType != None) scoreB = PIECE_VALUES[b.pieceEatenType] - PIECE_VALUES[b.pieceType];
         if (a.promotionPiece != None) scoreA += 1000;
         if (b.promotionPiece != None) scoreB += 1000;
-        return scoreA > scoreB; // higher-score first
+        return scoreA > scoreB;
     });
 
-    if (maximizingPlayer) {
-        int value = INT_MIN;
-        for (int i = 0; i < moveCount; i++) {
-            board.makeMove(moves[depth][i]);
+    // 5️⃣ Core negamax recursion
+    int bestValue = -1000000;
+    Move bestMove;
 
-            int childValue = alphaBeta(board, depth - 1, alpha, beta, false);
+    for (int i = 0; i < moveCount; i++) {
+        board.makeMove(moves[depth][i]);
+        int score = -alphaBeta(board, depth - 1, -beta, -alpha);
+        board.unmakeMove(moves[depth][i]);
 
-            board.unmakeMove(moves[depth][i]);
-
-            value = std::max(value, childValue);
-            alpha = std::max(alpha, value);
-            if (alpha >= beta) {
-                break; // beta cutoff
-            }
-        }
-        TTFlag flag;
-        if (value <= alphaOrig) flag = UPPERBOUND;
-        else if (value >= beta) flag = LOWERBOUND;
-        else flag = EXACT;
-
-        storeTT(key, depth, value, flag, bestMove);
-        return value;
-    } else {
-        int value = INT_MAX;
-        for (int i = 0; i < moveCount; i++) {
-            board.makeMove(moves[depth][i]);
-
-            int childValue = alphaBeta(board, depth - 1, alpha, beta, true);
-
-            board.unmakeMove(moves[depth][i]);
-
-            value = std::min(value, childValue);
-            beta = std::min(beta, value);
-            if (beta <= alpha) {
-                break; // alpha cutoff
-            }
+        if (score > bestValue) {
+            bestValue = score;
+            bestMove = moves[depth][i];
         }
 
-        TTFlag flag;
-        if (value <= alphaOrig) flag = UPPERBOUND;
-        else if (value >= beta) flag = LOWERBOUND;
-        else flag = EXACT;
-
-        storeTT(key, depth, value, flag, bestMove);
-        return value;
+        alpha = std::max(alpha, score);
+        if (alpha >= beta)
+            break; // β cutoff
     }
+
+    // 6️⃣ Store in TT
+    TTFlag flag;
+    if (bestValue <= originalAlpha) flag = UPPERBOUND;
+    else if (bestValue >= beta) flag = LOWERBOUND;
+    else flag = EXACT;
+    storeTT(key, depth, bestValue, flag, bestMove);
+
+    return bestValue;
 }
+
+
+
+
