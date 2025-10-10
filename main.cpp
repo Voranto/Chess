@@ -199,7 +199,7 @@ void renderBotGUI() {
     int clickEvent = -1;
     int newEvent;
     Board board = Board();
-    board.setTestingPosition();
+    board.setStartingPosition();
 
     Search moveFinder = Search();
 

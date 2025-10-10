@@ -23,6 +23,6 @@ class Search{
 		Move findBestMoveEndgame(Board& board, unsigned int score);
 
 	private:
-		int alphaBeta(Board& board, int depth, int alpha, int beta);
+		int alphaBeta(Board& board, int depth, int alpha, int beta, bool maximizingPlayer);
 
 };
